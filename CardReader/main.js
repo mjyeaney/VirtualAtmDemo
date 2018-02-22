@@ -8,11 +8,11 @@
 //
 
 const inputevent = require("input-event"),
-	clientFromConnectionString = require('azure-iot-device-mqtt').clientFromConnectionString,
+    clientFromConnectionString = require('azure-iot-device-mqtt').clientFromConnectionString,
     Message = require('azure-iot-device').Message,
     moment = require('moment'),
-	webcam = require('node-webcam'),
-	fs = require("fs");
+    webcam = require('node-webcam'),
+    fs = require("fs");
 
 const input = new inputevent('/dev/input/event0');
 const keyboard = new inputevent.Keyboard(input);
@@ -30,15 +30,15 @@ let codeBuffer = [];
 
 // Initialize webcam options
 let opts = {
-	width: 640,
-	height: 320,
-	quality: 75,
-	delay: 0,
-	saveShots: false,
-	output: "jpeg",
-	device: false,
-	callbackReturn: "location",
-	device: false
+    width: 640,
+    height: 320,
+    quality: 75,
+    delay: 0,
+    saveShots: false,
+    output: "jpeg",
+    device: false,
+    callbackReturn: "location",
+    device: false
 };
 let camera = webcam.create(opts);
 
@@ -67,25 +67,25 @@ const sendReadingData = () => {
 };
 
 const captureAndSendPhoto = () => {
-	let imageName = `images/${Date.now()}`;
-	camera.capture(imageName, (err, data) => {
-		console.log(`Capture image to: ${data}`);
-		fs.stat(data, (err, stats) => {
-			const rs = fs.createReadStream(data);
-			client.uploadToBlob(data, rs, stats.size, (err) => {
-				if (err) { 
-					console.log(`Error uploading image: ${err.toString()}`);
-				} else {
-					console.log("Image upload finished!");
-					fs.unlink(data, (err) => {
-						if (err) {
-							console.log(`Error removing temp image file: ${err.toString()}`);
-						}
-					});
-				}
-			});
-		});
-	});
+    let imageName = `images/${Date.now()}`;
+    camera.capture(imageName, (err, data) => {
+        console.log(`Capture image to: ${data}`);
+        fs.stat(data, (err, stats) => {
+            const rs = fs.createReadStream(data);
+            client.uploadToBlob(data, rs, stats.size, (err) => {
+                if (err) { 
+                    console.log(`Error uploading image: ${err.toString()}`);
+                } else {
+                    console.log("Image upload finished!");
+                    fs.unlink(data, (err) => {
+                        if (err) {
+                            console.log(`Error removing temp image file: ${err.toString()}`);
+                        }
+                    });
+                }
+            });
+        });
+    });
 };
 
 const printMaintenanceMessage = (msg) => {
@@ -121,24 +121,24 @@ const connectCallback = (err) => {
 
 // Bind to the kernel event messages
 keyboard.on("keypress", (data) => {
-	// Numeric 'enter' key marks end of this read
-	if (data.code === 96){
-		let fullCode = buffer.join('');
-		let cardNumber = fullCode.substring(2, 18);
-		buffer.length = 0;
-		codeBuffer.length = 0;
-		console.log(`Read number: ${cardNumber}`);
-		sendReadingData();
-		captureAndSendPhoto();
-		return;
-	}
+    // Numeric 'enter' key marks end of this read
+    if (data.code === 96){
+        let fullCode = buffer.join('');
+        let cardNumber = fullCode.substring(2, 18);
+        buffer.length = 0;
+        codeBuffer.length = 0;
+        console.log(`Read number: ${cardNumber}`);
+        sendReadingData();
+        captureAndSendPhoto();
+        return;
+    }
 
-	// Classic EBCDIC encoding on alpha characters (\x42 is a period)
-	// Just ignoring for this demo
-	if (data.code != 42) {
-		buffer.push(keyMap[data.code]);
-		codeBuffer.push(data.code);
-	}
+    // Classic EBCDIC encoding on alpha characters (\x42 is a period)
+    // Just ignoring for this demo
+    if (data.code != 42) {
+        buffer.push(keyMap[data.code]);
+        codeBuffer.push(data.code);
+    }
 });
 
 // Open the connection to the IoT hub

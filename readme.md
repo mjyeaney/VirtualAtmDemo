@@ -9,8 +9,9 @@ Features
 Here's a screenshot of the web application in action (both desktop and mobile), as well as a shot of the 
 Raspberry Pi 3 "ATM":
 
-![Screenshot](screenshot-large.png)
-![Screenshot](screenshot-mobile.png)
+Mobile Screen                      | Desktop Screen
+:---------------------------------:|:-----------------------------------:
+![Screenshot](screenshot-mobile.png)|![Screenshot](screenshot-large.png)
 
 Architecture
 ------------

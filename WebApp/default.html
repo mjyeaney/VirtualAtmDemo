@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=yes">
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <link rel="shortcut icon" href="/favicon.ico?ver=1.42" />
+        <link href="//fonts.googleapis.com/css?family=Open+Sans:300,400,600" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" type="text/css" href="/styles/main.css?ver=1.42" />
+        <title>Virtual ATM Monitor</title>
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="header">
+                <h3>Virtual ATM Monitor</h3>
+
+                <ul>
+                    <li><a href="https://github.com/mjyeaney/VirtualAtm" title="View on GitHub" target="_blank">View on GitHub</a>
+                </ul>
+
+                <div class="clearFix"></div>
+            </div>
+
+            <div id="navigation">
+                <ul>
+                    <li title="Overview"><a class="overview active" href="#/overview"><span>Overview</span>&nbsp;</a></li>
+                    <li title="History"><a class="history" href="#/history"><span>History</span>&nbsp;</a></li>
+                    <li title="Live View"><a class="liveview" href="#/liveview"><span>Live View</span>&nbsp;</a></li>
+                    <li title="Maintenance"><a class="maintenance" href="#/maintenance"><span>Maintenance</span>&nbsp;</a></li>
+                </ul>
+
+                <p class="versionLabel">v0.5.02052018 beta</p>
+            </div>
+
+            <div id="content">
+                <div id="overview" class="content-stage">
+                    <h2>Virtual ATM Monitor Architecture</h2>
+                    <p>The diagram below outlines the high-level architecture used by the Virtual ATM monitor. Note in this demo, 
+                        Machine Learning is not currently deployed (will be added in later builds), but could be included to provide 
+                        predictive maintenance or other intelligent capabilities.
+                    </p>
+                    <p><img src="/images/diagram.png" title="Architecture Diagram" width="75%" /></p>
+                    <p>This design is essentially an implementation of the <a href="https://en.wikipedia.org/wiki/Lambda_architecture" title="Lambda Architecture">Lambda architecture</a> 
+                        style, combining both hot-path (streaming layer) and cold-path (batch layer) data flows into a single serving tier.</p>
+                    <p>Once telemetry data is received by the IoT Hub, it is routed to a Stream Analytics instance that is performing 
+                        windowing queries that quantize/summarize the incoming data stream. The Stream Analytics queries break the raw device 
+                        data into three feeds: one for transaction summaries every 1 second, one for any reported maintenance errors 
+                        every 1 second, and finally a summarized window that reports every 5 minutes (see workflow diagram below).</p>
+                    <p><img src="/images/asa-diagram.png" title="Stream Analytics query outline" width="75%" /></p>
+                    <p>Each of the Stream Analytics queries are making use of Tumbling Window functions, which allow for operations to be
+                        implemented within defined temporal windows (as shown below):</p>
+                    <p><img src="/images/asa-windowing.png" title="Tumbling Window visual" width="75%" /></p>
+                </div>
+
+                <div id="history" class="content-stage">
+                    <h2>Total Purchase Amount</h2>
+                    <p class="smallText">(Last ~24 hours)</p>
+                    <div class="graphParent">
+                        <div id="totalAmountGraph" class="graphContainer fLeft"></div>
+                        <div id="totalAmountGauge" class="gaugeContainer fRight">
+                            <div>
+                                <span class="data">0.00</span>
+                                <span>Total Amount</span>
+                            </div>
+                        </div>
+                        <div class="clearFix"></div>
+                    </div>
+
+                    <h2>Total Purchases</h2>
+                    <p class="smallText">(Last ~24 hours)</p>
+                    <div class="graphParent">
+                        <div id="totalCountGraph" class="graphContainer fLeft"></div>
+                        <div id="totalCountGauge" class="gaugeContainer fRight">
+                            <div>
+                                <span class="data">0</span>
+                                <span>Total Count</span>
+                            </div>
+                        </div>
+                        <div class="clearFix"></div>
+                    </div>                    
+                </div>
+
+                <div id="dashboard" class="content-stage">
+                    <h2>Live Purchases</h2>
+                    <p class="smallText">(Last ~5 mins)</p>
+                    <div class="graphParent">
+                        <div id="amountGraph" class="graphContainer fLeft"></div>
+                        <div id="spendGauge" class="gaugeContainer fRight">
+                            <div>
+                                <span class="data">0.00</span>
+                                <span>Average Amount</span>                                
+                            </div>
+                        </div>
+                        <div class="clearFix"></div>
+                    </div>
+
+                    <h2>Live Purchase Rate</h2>
+                    <p class="smallText">(Last ~5 mins)</p>
+                    <div class="graphParent">
+                        <div id="countGraph" class="graphContainer fLeft"></div>
+                        <div id="rateGauge" class="gaugeContainer fRight">
+                            <div>
+                                <span class="data">0</span>
+                                <span>Transactions/sec</span>
+                            </div>
+                        </div>
+                        <div class="clearFix"></div>
+                    </div>
+
+                    <h2>Live Maintenance Alerts</h2>
+                    <p class="smallText">(Last ~5 mins)</p>
+                    <div class="graphParent">
+                        <div id="alertsGraph" class="graphContainer fLeft"></div>
+                        <div id="alertRateGauge" class="gaugeContainer fRight">
+                            <div>
+                                <span class="data">0</span>
+                                <span>Total Alerts</span>
+                            </div>
+                        </div>
+                        <div class="clearFix"></div>
+                    </div>
+                </div>
+                
+                <div id="mainenance" class="content-stage">
+                    <h2>Remote ATM Maintenance</h2>
+                    <div class="form">
+                        <label>Select device to perform maintenance against:</label>
+                        <select id="maintenanceDevice">
+                            <option value="BulkAtmAgent">BulkAtmAgent</option>
+                            <option value="PiCardReader">PiCardReader</option>
+                        </select>
+                        <label>Select type of maintenance to perform:</label>
+                        <select id="maintenanceType">
+                            <option value="RESET_BILL_COUNTER">Reset bill counter</option>
+                            <option value="REBOOT_TERMINAL">Reboot terminal</option>
+                        </select>
+                        <button id="btnMaintenance">Submit Maintenance</button>
+                    </div>
+
+                    <h2>Card Reader Captured Images</h2>
+                    <p>Last recorded photo:</p>
+                    <img id="cardReaderImage" />
+                </div>
+            </div>
+        </div>
+
+        <script src="/js/jquery-3.3.1.min.js"></script>
+        <script src="/js/highcharts.js"></script>
+        <script src="/js/graphics.js?ver=1.42"></script>
+        <script src="/js/app-data.js?ver=1.42"></script>
+        <script src="/js/app-main.js?ver=1.42"></script>        
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            //
+            // Application startup & bootstrapping
+            //
+            var app = null;
+            var socket = io({
+                transports: ['websocket']
+            });
+
+            $(function(){
+                app = new Application.Controller();
+                app.BindHostEvents($, socket);
+                app.Init(new Application.DataService());
+            });
+        </script>
+    </body>
+</html>

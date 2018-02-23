@@ -1,0 +1,119 @@
+{
+  "name": "AtmDataProcessor",
+  "type": "Microsoft.StreamAnalytics/streamingjobs",
+  "apiVersion": "2016-03-01",
+  "location": "East US",
+  "tags": {},
+  "properties": {
+    "sku": {
+      "name": "Standard"
+    },
+    "outputStartMode": "JobStartTime",
+    "outputStartTime": "2018-02-21T20:35:55.35Z",
+    "eventsOutOfOrderPolicy": "Adjust",
+    "outputErrorPolicy": "Stop",
+    "eventsOutOfOrderMaxDelayInSeconds": 0,
+    "eventsLateArrivalMaxDelayInSeconds": 5,
+    "dataLocale": "en-US",
+    "compatibilityLevel": "1.0",
+    "inputs": [
+      {
+        "properties": {
+          "type": "Stream",
+          "datasource": {
+            "type": "Microsoft.Devices/IotHubs",
+            "properties": {
+              "iotHubNamespace": "VirtualAtmHub",
+              "sharedAccessPolicyName": "iothubowner",
+              "consumerGroupName": "$Default",
+              "endpoint": "messages/events"
+            }
+          },
+          "serialization": {
+            "type": "Json",
+            "properties": {
+              "encoding": "UTF8"
+            }
+          }
+        },
+        "name": "AtmRawData"
+    }
+    ],
+    "transformation": {
+      "properties": {
+        "streamingUnits": 1,
+        "query": "SELECT\r\n    Terminal,\r\n    System.TimeStamp AS Time,\r\n    SUM(Amount) As Amount,\r\n    COUNT(Amount) As Count\r\nINTO\r\n    [TransactionSummary]\r\nFROM\r\n    [AtmRawData] TIMESTAMP BY Time\r\nWHERE\r\n    (Condition = 'OK')\r\nGROUP BY \r\n    Terminal,\r\n    TumblingWindow(second, 1)\r\n\r\nSELECT\r\n    Terminal,\r\n    System.TimeStamp AS Time,\r\n    SUM(Amount) As Amount,\r\n    COUNT(Amount) As Count\r\nINTO\r\n    [LongTermMetrics]\r\nFROM\r\n    [AtmRawData] TIMESTAMP BY Time\r\nWHERE\r\n    (Condition = 'OK')\r\nGROUP BY \r\n    Terminal,\r\n    TumblingWindow(second, 300)\r\n\r\nSELECT\r\n    Terminal,\r\n    System.TimeStamp AS Time,\r\n    COUNT(DISTINCT Terminal) As Count\r\nINTO\r\n    [MaintenanceAlerts]\r\nFROM\r\n    [AtmRawData] TIMESTAMP BY Time\r\nWHERE\r\n    (Condition = 'MAINTENANCE_REQUIRED')\r\nGROUP BY \r\n    Terminal,\r\n    TumblingWindow(second, 1)"
+      },
+      "name": "Transformation"
+    },
+    "outputs": [
+      {
+        "properties": {
+          "datasource": {
+            "type": "Microsoft.Storage/Blob",
+            "properties": {
+              "storageAccounts": [
+                {
+                  "accountName": "virtualatmdemo02062018"
+                }
+              ],
+              "container": "vatmdemocoldpath",
+              "pathPattern": "{date}/{time}",
+              "dateFormat": "yyyy/MM/dd",
+              "timeFormat": "HH"
+            }
+          },
+          "serialization": {
+            "type": "Csv",
+            "properties": {
+              "fieldDelimiter": ",",
+              "encoding": "UTF8"
+            }
+          }
+        },
+        "name": "LongTermMetrics"
+      },
+      {
+        "properties": {
+          "datasource": {
+            "type": "Microsoft.ServiceBus/EventHub",
+            "properties": {
+              "serviceBusNamespace": "vatmrawdatafeed",
+              "sharedAccessPolicyName": "RootManageSharedAccessKey",
+              "eventHubName": "maintenancealerts"
+            }
+          },
+          "serialization": {
+            "type": "Json",
+            "properties": {
+              "encoding": "UTF8",
+              "format": "Array"
+            }
+          }
+        },
+        "name": "MaintenanceAlerts"
+      },
+      {
+        "properties": {
+          "datasource": {
+            "type": "Microsoft.ServiceBus/EventHub",
+            "properties": {
+              "serviceBusNamespace": "vatmrawdatafeed",
+              "sharedAccessPolicyName": "RootManageSharedAccessKey",
+              "eventHubName": "transactionsummary"
+            }
+          },
+          "serialization": {
+            "type": "Json",
+            "properties": {
+              "encoding": "UTF8",
+              "format": "Array"
+            }
+          }
+        },
+        "name": "TransactionSummary"
+      }
+    ],
+    "functions": []
+  }
+}

@@ -50,3 +50,20 @@ Setup and Deployment
 
 The base environment can be created using the `SetupDeployment.ps1` script, however note that the Stream Analytics job definition 
 and the IoT Hub deployment are still missing. I'll add these shortly (see issues).
+
+You will also need to define the following environment variables prior to running (sample below in PowerShell):
+
+```
+# For WebApp/eventHubDataReader.js
+$env:VirtualAtmEventHubMaint = "--Fill In--"
+$env:VirtualAtmEventHubTxn = "--Fill In--"
+
+# For WebApp/ioTHubSender.js
+$env:VirtualAtmIotHubOwner = "--Fill In--"
+
+# For CardReader/main.js
+$env:VirtualAtmCardReader = "--Fill In--"
+
+# For BulkAtmAgent/agent.js
+$env:VirtualAtmBulkAtmAgent = "--Fill In--"
+```

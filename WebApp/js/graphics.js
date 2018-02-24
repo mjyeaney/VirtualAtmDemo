@@ -34,9 +34,11 @@
             },
             xAxis: { 
                 gridLineWidth: 1, 
-                type: 'linear',
-                min: 0,
-                max: 300
+                type: 'datetime',
+                min: Date.now() - (10 * 86400 * 1000),
+                max: Date.now()
+                // min: Date.now() - (5 * 60 * 1000),
+                // max: Date.now()
             },
             yAxis: {
                 title: { text: '' },
@@ -72,9 +74,9 @@
             title: { text: null },
             xAxis: { 
                 gridLineWidth: 1, 
-                type: 'linear',
-                min: 0,
-                max: 300
+                type: 'datetime',
+                min: Date.now() - (10 * 60 * 1000),
+                max: Date.now()
             },
             yAxis: {
                 title: { text: '' },

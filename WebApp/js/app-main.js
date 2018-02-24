@@ -70,8 +70,8 @@
                     totalCount = 0;
 
                 data.map(function(datum){
-                    amounts.push(datum.amount);
-                    counts.push(datum.count);
+                    amounts.push([Date.parse(datum.date), datum.amount]);
+                    counts.push([Date.parse(datum.date), datum.count]);
                     totalAmount += datum.amount;
                     totalCount += datum.count;
                 });

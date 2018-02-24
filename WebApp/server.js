@@ -92,13 +92,13 @@ app.post("/c2d/:deviceId/", (req, resp) => {
 // Init socket.io events
 //
 io.on('connection', function(socket){
-    console.log('INFO: user connected');
+    console.log('WEBSOCKET: user connected');
     socket.on('disconnect', function(){
-        console.log('INFO: user disconnected');
+        console.log('WEBSOCKET: user disconnected');
     });
 });
 
-console.log("INFO: Starting maintenance listener...");
+console.log("INFO: Starting maintenance event listener...");
 eventHubDataReader.StartMaintenanceListener((data) => {
     io.emit('maintenancealert', data);
 });

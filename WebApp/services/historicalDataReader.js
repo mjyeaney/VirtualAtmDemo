@@ -19,20 +19,20 @@
     const parseBlobContents = (parsedUrl, workItemIndex, fullBody, callback) => {
         console.log(`Blob ${parsedUrl.path} downloaded..parsing`);
         let splitPath = parsedUrl.path.split("/");
-        let dateParts = `${splitPath[2]}-${splitPath[3]}-${splitPath[4]}-${splitPath[5]}`;
-        let rows = fullBody.split("\n");
+        let dateParts = `${splitPath[2]}-${splitPath[3]}-${splitPath[4]} ${splitPath[5]}:00:00`;
+        let rows = fullBody.split("\n").slice(1);
         let summedAmount = 0.0;
         let summedCount = 0;
 
-        for (let j = 1; j < rows.length; j++){
-            if (rows[j].length > 0){
-                let cells = rows[j].split(",");
+        rows.map((row) => {
+            if (row.length > 0){
+                let cells = row.split(",");
                 if (cells.length > 0){
                     summedAmount += parseFloat(cells[2]);
                     summedCount += parseInt(cells[3]);
                 }
             }
-        }
+        });
 
         console.log(`Parsing complete for ${parsedUrl.path}`);
         callback(null, workItemIndex, {
@@ -65,6 +65,7 @@
     // Parses the return XML from Blob store that lists individual blobs
     const parseBlobListResponse = (body, callback) => {
         console.log("Loaded blob container search results...enumerating");
+
         parseXmlString(body, (err, result) => {
             let blobCount = result.EnumerationResults.Blobs[0].Blob.length;
             let completedJobs = 0;
@@ -73,6 +74,7 @@
             console.log(`Found ${blobCount} blobs...`);
             for (let j = 0; j < blobCount; j++){
                 let blobUrl = result.EnumerationResults.Blobs[0].Blob[j].Url[0];
+
                 downloadBlob(blobUrl, j, (err, index, result) => {
                     results[index] = result;
                     completedJobs++;
@@ -125,10 +127,12 @@
     const loadData = function(callback){
         if (_cachedData == null){
             console.log("Cache miss...loading historical data...");
+
             listBlobsAndSummarize((results) => {
                 console.log("Historical data loaded..setting cache timer");
                 _cachedData = results;
                 callback(null, results);
+                
                 _cacheTimer = setTimeout(() => {
                     console.log("Historical cache evicted!!!");
                     _cachedData = null;

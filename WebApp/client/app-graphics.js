@@ -21,6 +21,7 @@
             _summaryDataCounts = [],
             _maintenanceData = [];
 
+        // Simple string formatting for large numbers
         var formatNumberShort = function(num){
             var asString = num.toFixed(0),
                 len = asString.length;
@@ -37,7 +38,7 @@
             return new Highcharts.Chart({
                 chart: {
                     renderTo: domElm, 
-                    type: 'spline', 
+                    type: 'line', 
                     animation: false,
                     backgroundColor: '#fff'
                 },
@@ -52,7 +53,7 @@
                     line: {
                         marker: { radius: 0 }
                     },
-                    series: { enableMouseTracking: false }
+                    series: { enableMouseTracking: true }
                 },
                 xAxis: { 
                     gridLineWidth: 1, 
@@ -72,6 +73,7 @@
                 },
                 legend: { enabled: false },
                 series: [{ 
+                    name: title,
                     animation: false,
                     color: '#69c', 
                     data: data
@@ -120,9 +122,9 @@
             // Initialize amount and count line plots
             if (!_historyGraphsInitialized) {
                 let maxDate = Date.now();
-                let minDate = Date.now() - (10 * 86400 * 1000);
-                _totalAmountGraph = createDateTimeLinePlot('Withdrawal Amounts', [], minDate, maxDate, 'totalAmountGraph');
-                _totalCountGraph = createDateTimeLinePlot('Withdrawal Counts', [], minDate, maxDate, 'totalCountGraph');
+                let minDate = Date.now() - (14 * 86400 * 1000); // 2 weeks...for now
+                _totalAmountGraph = createDateTimeLinePlot('Total Purchase Amount', [], minDate, maxDate, 'totalAmountGraph');
+                _totalCountGraph = createDateTimeLinePlot('Total Purchase Count', [], minDate, maxDate, 'totalCountGraph');
                 _historyGraphsInitialized = true;
             }
 
@@ -156,11 +158,21 @@
         this.InitializeLiveGraphs = function(){
             // Initialize amount and count line plots
             if (!_graphsInitialized) {
-                let maxDate = Date.now() + (5 * 60 * 1000);
+                let maxDate = Date.now() + (5 * 60 * 1000); // ~5 minute window
                 let minDate = Date.now();
                 _amountGraph = createDateTimeLinePlot('Transaction Amounts', [], minDate, maxDate, 'amountGraph');
                 _countGraph = createDateTimeLinePlot('Transaction Counts', [], minDate, maxDate, 'countGraph');
                 _alertGraph = createColumnPlot('Maintenance Alerts', [], 'alertsGraph');
+
+                // // set a timer to keep the x-axis rolling
+                // setInterval(() => {
+                //     let maxDate = Date.now() + (5 * 60 * 1000); // ~5 minute window
+                //     let minDate = Date.now();
+                //     _amountGraph.xAxis[0].setExtremes(minDate, maxDate);
+                //     _countGraph.xAxis[0].setExtremes(minDate, maxDate);
+                //     _alertGraph.xAxis[0].setExtremes(minDate, maxDate);
+                // }, 1 * 60 * 1000);
+
                 _graphsInitialized = true;
             }
 
@@ -199,8 +211,8 @@
         this.UpdateLiveGraphs = function(txnDatum, alertDatum){
             if (txnDatum) {
                 // Add new data values
-                _summaryDataCounts.push([txnDatum.date, txnDatum.count]);
-                _summaryDataBuffer.push([txnDatum.date, txnDatum.amount]);
+                _summaryDataCounts.push([Date.parse(txnDatum.date), txnDatum.count]);
+                _summaryDataBuffer.push([Date.parse(txnDatum.date), txnDatum.amount]);
                 _maintenanceData.push(0);
             } else {
                 _maintenanceData.push(alertDatum.count);
@@ -233,9 +245,6 @@
             _amountGraph.series[0].setData(_summaryDataBuffer, true, false, false);
             _countGraph.series[0].setData(_summaryDataCounts, true, false, false);
             _alertGraph.series[0].setData(_maintenanceData, true, false, false);
-
-            // Consider updating ranges as well...
-            //chart.xAxis[0].setExtremes(new Date().getTime(), new Date().setHours(new Date().getHours()+1));
 
             // Update summary badges
             _host('#spendGauge span.data').text(avgAmount.toFixed(2));

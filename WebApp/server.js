@@ -108,6 +108,16 @@ eventHubDataReader.StartTxnSummaryListener((data) => {
     io.emit('txnsummarydata', data);
 });
 
+// // DEBUG:
+// setInterval(() => {
+//     let data = {
+//         amount: (Math.random() * 300.00),
+//         count: (Math.ceil(Math.random() * 5)),
+//         date: new Date().toJSON()
+//     };
+//     io.emit("txnsummarydata", data);
+// }, 1000);
+
 //
 // Init server listener loop
 //

@@ -63,7 +63,11 @@
             if (!_photoRefreshTimer){
                 var refreshCardReaderPhoto = function(){
                     _dataProvider.LoadCardReaderImageInfo(function(err, data){
-                        _host('#cardReaderImage').attr("src", data.blobUri);
+                        if (data !== null){
+                            _host('#cardReaderImage').attr("src", data.blobUri);
+                        } else {
+                            _host('#cardReaderImage').attr("src", "/images/loading.gif");
+                        }
                     });
                 };
 

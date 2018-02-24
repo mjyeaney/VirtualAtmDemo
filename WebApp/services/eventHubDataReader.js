@@ -24,18 +24,18 @@
                     _client.createReceiver('$Default', id, { 
                         startAfterTime: Date.now() 
                     })
-                        .then((receiver) => {
-                            receiver.on('errorReceived', (err) => {
-                                console.log(`ERROR: ${err}`);
-                            });
-                            receiver.on('message', (message) => {
-                                var bodyParts = message.body;
-                                bodyParts.map((part) => {
-                                    localCacheProvider(part);
-                                    callback(part);
-                                });
+                    .then((receiver) => {
+                        receiver.on('errorReceived', (err) => {
+                            console.log(`ERROR: ${err}`);
+                        });
+                        receiver.on('message', (message) => {
+                            var bodyParts = message.body;
+                            bodyParts.map((part) => {
+                                localCacheProvider(part);
+                                callback(part);
                             });
                         });
+                    });
                 });
             });
     };

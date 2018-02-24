@@ -34,7 +34,7 @@
         //
         // Configures a lineplot using the specified options.
         //
-        var createDateTimeLinePlot = function(title, data, minDate, maxDate, domElm){
+        var createLinePlot = function(title, data, minDate, maxDate, domElm){
             return new Highcharts.Chart({
                 chart: {
                     renderTo: domElm, 
@@ -84,7 +84,7 @@
         //
         // Configures a column plot using the specified options.
         //
-        var createColumnPlot = function(title, data, domElm){
+        var createColumnPlot = function(title, data, minDate, maxDate, domElm){
             return new Highcharts.Chart({
                 chart: {
                     renderTo: domElm, 
@@ -97,8 +97,8 @@
                 xAxis: { 
                     gridLineWidth: 1, 
                     type: 'datetime',
-                    min: Date.now() - (10 * 60 * 1000),
-                    max: Date.now()
+                    min: minDate,
+                    max: maxDate
                 },
                 yAxis: {
                     title: { text: '' },
@@ -123,8 +123,8 @@
             if (!_historyGraphsInitialized) {
                 let maxDate = Date.now();
                 let minDate = Date.now() - (14 * 86400 * 1000); // 2 weeks...for now
-                _totalAmountGraph = createDateTimeLinePlot('Total Purchase Amount', [], minDate, maxDate, 'totalAmountGraph');
-                _totalCountGraph = createDateTimeLinePlot('Total Purchase Count', [], minDate, maxDate, 'totalCountGraph');
+                _totalAmountGraph = createLinePlot('Total Purchase Amount', [], minDate, maxDate, 'totalAmountGraph');
+                _totalCountGraph = createLinePlot('Total Purchase Count', [], minDate, maxDate, 'totalCountGraph');
                 _historyGraphsInitialized = true;
             }
 
@@ -160,9 +160,9 @@
             if (!_graphsInitialized) {
                 let maxDate = Date.now() + (5 * 60 * 1000); // ~5 minute window
                 let minDate = Date.now();
-                _amountGraph = createDateTimeLinePlot('Transaction Amounts', [], minDate, maxDate, 'amountGraph');
-                _countGraph = createDateTimeLinePlot('Transaction Counts', [], minDate, maxDate, 'countGraph');
-                _alertGraph = createColumnPlot('Maintenance Alerts', [], 'alertsGraph');
+                _amountGraph = createLinePlot('Transaction Amounts', [], minDate, maxDate, 'amountGraph');
+                _countGraph = createLinePlot('Transaction Counts', [], minDate, maxDate, 'countGraph');
+                _alertGraph = createColumnPlot('Maintenance Alerts', [], minDate, maxDate, 'alertsGraph');
 
                 // // set a timer to keep the x-axis rolling
                 // setInterval(() => {
@@ -215,7 +215,7 @@
                 _summaryDataBuffer.push([Date.parse(txnDatum.date), txnDatum.amount]);
                 _maintenanceData.push(0);
             } else {
-                _maintenanceData.push(alertDatum.count);
+                _maintenanceData.push([Date.parse(alertDatum.date), alertDatum.count]);
             }
 
             // Apply LIFO clamping

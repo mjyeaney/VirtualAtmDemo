@@ -15,29 +15,27 @@
 
     const _beginEventHubListener = (connection, callback, localCacheProvider) => {
         const _client = eventHubClient.fromConnectionString(connection);
-        _client.open()
-            .then(() => {
-                return _client.getPartitionIds()
-            })
-            .then((ids) => {
-                ids.map((id) => {
-                    _client.createReceiver('$Default', id, { 
-                        startAfterTime: Date.now() 
-                    })
-                    .then((receiver) => {
-                        receiver.on('errorReceived', (err) => {
-                            console.log(`ERROR: ${err}`);
-                        });
-                        receiver.on('message', (message) => {
-                            var bodyParts = message.body;
-                            bodyParts.map((part) => {
-                                localCacheProvider(part);
-                                callback(part);
-                            });
+        
+        _client.open().then(() => {
+            return _client.getPartitionIds()
+        }).then((ids) => {
+            ids.map((id) => {
+                _client.createReceiver('$Default', id, { 
+                    startAfterTime: Date.now() 
+                }).then((receiver) => {
+                    receiver.on('errorReceived', (err) => {
+                        console.log(`ERROR: ${err}`);
+                    });
+                    receiver.on('message', (message) => {
+                        var bodyParts = message.body;
+                        bodyParts.map((part) => {
+                            localCacheProvider(part);
+                            callback(part);
                         });
                     });
                 });
             });
+        });
     };
 
     const startMaintenanceListener = (callback) => {

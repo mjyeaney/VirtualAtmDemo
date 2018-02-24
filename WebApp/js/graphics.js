@@ -11,11 +11,11 @@
     //
     // Configures a lineplot using the specified options.
     //
-    var createLinePlot = function(title, data, domElm){
+    var createDateTimeLinePlot = function(title, data, minDate, maxDate, domElm){
         return new Highcharts.Chart({
             chart: {
                 renderTo: domElm, 
-                type: 'line', 
+                type: 'spline', 
                 animation: false,
                 backgroundColor: '#fff'
             },
@@ -35,10 +35,8 @@
             xAxis: { 
                 gridLineWidth: 1, 
                 type: 'datetime',
-                min: Date.now() - (10 * 86400 * 1000),
-                max: Date.now()
-                // min: Date.now() - (5 * 60 * 1000),
-                // max: Date.now()
+                min: minDate,
+                max: maxDate
             },
             yAxis: {
                 title: { text: '' },
@@ -99,6 +97,6 @@
     //
     // Module exports
     //
-    scope.Graphics.CreateLinePlot = createLinePlot;
+    scope.Graphics.CreateDateTimeLinePlot = createDateTimeLinePlot;
     scope.Graphics.CreateColumnPlot = createColumnPlot;
 })(this);

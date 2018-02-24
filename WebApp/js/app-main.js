@@ -53,8 +53,10 @@
 
             // Initialize amount and count line plots
             if (!_historyGraphsInitialized) {
-                _totalAmountGraph = Graphics.CreateLinePlot('Withdrawal Amounts', [], 'totalAmountGraph');
-                _totalCountGraph = Graphics.CreateLinePlot('Withdrawal Counts', [], 'totalCountGraph');
+                let maxDate = Date.now();
+                let minDate = Date.now() - (10 * 86400 * 1000);
+                _totalAmountGraph = Graphics.CreateDateTimeLinePlot('Withdrawal Amounts', [], minDate, maxDate, 'totalAmountGraph');
+                _totalCountGraph = Graphics.CreateDateTimeLinePlot('Withdrawal Counts', [], minDate, maxDate, 'totalCountGraph');
                 _historyGraphsInitialized = true;
             }
 
@@ -95,8 +97,10 @@
 
             // Initialize amount and count line plots
             if (!_graphsInitialized) {
-                _amountGraph = Graphics.CreateLinePlot('Transaction Amounts', [], 'amountGraph');
-                _countGraph = Graphics.CreateLinePlot('Transaction Counts', [], 'countGraph');
+                let maxDate = Date.now() + (5 * 60 * 1000);
+                let minDate = Date.now();
+                _amountGraph = Graphics.CreateDateTimeLinePlot('Transaction Amounts', [], minDate, maxDate, 'amountGraph');
+                _countGraph = Graphics.CreateDateTimeLinePlot('Transaction Counts', [], minDate, maxDate, 'countGraph');
                 _alertGraph = Graphics.CreateColumnPlot('Maintenance Alerts', [], 'alertsGraph');
                 _graphsInitialized = true;
             }
@@ -153,8 +157,8 @@
         var updateLiveData = function (summaryData, maintenanceData) {
             if (summaryData) {
                 // Add new data values
-                _summaryDataCounts.push(summaryData.count);
-                _summaryDataBuffer.push(summaryData.amount);
+                _summaryDataCounts.push([summaryData.date, summaryData.count]);
+                _summaryDataBuffer.push([summaryData.date, summaryData.amount]);
                 _maintenanceData.push(0);
             } else {
                 _maintenanceData.push(maintenanceData.count);
@@ -173,11 +177,11 @@
 
             // Compute avgs for current buffers (need to fold over current buffers)
             var amountSum = _summaryDataBuffer.reduce(function (prev, curr) {
-                return prev + curr;
-            });
+                return prev + curr[1];
+            }, 0);
             var countSum = _summaryDataCounts.reduce(function (prev, curr) {
-                return prev + curr;
-            });
+                return prev + curr[1];
+            }, 0);
             var maintCount = _maintenanceData.reduce(function (prev, curr) {
                 return prev + curr;
             });
@@ -187,6 +191,9 @@
             _amountGraph.series[0].setData(_summaryDataBuffer, true, false, false);
             _countGraph.series[0].setData(_summaryDataCounts, true, false, false);
             _alertGraph.series[0].setData(_maintenanceData, true, false, false);
+
+            // Consider updating ranges as well...
+            //chart.xAxis[0].setExtremes(new Date().getTime(), new Date().setHours(new Date().getHours()+1));
 
             // Update summary badges
             _host('#spendGauge span.data').text(avgAmount.toFixed(2));
@@ -235,6 +242,17 @@
             _socket.on('maintenancealert', function (msg) {
                 updateLiveData(null, msg);
             });
+
+            // FOR DEBUG:
+            setInterval(() => {
+                let value = Math.random() * 250.00;
+                let count = Math.ceil(Math.random() * 5);
+                updateLiveData({
+                    amount: value,
+                    count: count,
+                    date: Date.now()
+                });
+            }, 1000);
         };
 
         // Bootstrap default state

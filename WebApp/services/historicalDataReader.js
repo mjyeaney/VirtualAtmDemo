@@ -20,7 +20,7 @@
         console.log(`Blob ${parsedUrl.path} downloaded..parsing`);
         let splitPath = parsedUrl.path.split("/");
         let dateParts = `${splitPath[2]}-${splitPath[3]}-${splitPath[4]} ${splitPath[5]}:00:00`;
-        let rows = fullBody.split("\n").slice(1);
+        let rows = fullBody.split("\n").slice(1); // NOTE: skip the header row of the CSV
         let summedAmount = 0.0;
         let summedCount = 0;
 
@@ -66,6 +66,7 @@
     const parseBlobListResponse = (body, callback) => {
         console.log("Loaded blob container search results...enumerating");
 
+        // The blob service returns XML (odata) for query results. Yay
         parseXmlString(body, (err, result) => {
             let blobCount = result.EnumerationResults.Blobs[0].Blob.length;
             let completedJobs = 0;
@@ -75,10 +76,12 @@
             for (let j = 0; j < blobCount; j++){
                 let blobUrl = result.EnumerationResults.Blobs[0].Blob[j].Url[0];
 
+                // Download each blob async
                 downloadBlob(blobUrl, j, (err, index, result) => {
                     results[index] = result;
                     completedJobs++;
 
+                    // Basically "task.whenall", using bakery-style counters.
                     if (completedJobs === blobCount){
                         console.log("Sorting historical data...");
                         results.sort((a, b) => {
@@ -87,7 +90,6 @@
                             return 0;
                         });
                         console.log("Done sorting...results");
-                        console.log(JSON.stringify(results));
                         callback(results);
                     }
                 });
@@ -132,7 +134,7 @@
                 console.log("Historical data loaded..setting cache timer");
                 _cachedData = results;
                 callback(null, results);
-                
+
                 _cacheTimer = setTimeout(() => {
                     console.log("Historical cache evicted!!!");
                     _cachedData = null;

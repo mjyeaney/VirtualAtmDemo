@@ -145,25 +145,26 @@
             </div>
         </div>
 
-        <script src="/js/jquery-3.3.1.min.js"></script>
-        <script src="/js/highcharts.js"></script>
-        <script src="/js/graphics.js?ver=1.42"></script>
-        <script src="/js/app-data.js?ver=1.42"></script>
-        <script src="/js/app-main.js?ver=1.42"></script>        
+        <script src="/client/jquery-3.3.1.min.js"></script>
+        <script src="/client/highcharts.js"></script>
+        <script src="/client/app-data.js?ver=1.42"></script>
+        <script src="/client/app-graphics.js?ver=1.42"></script>
+        <script src="/client/app-main.js?ver=1.42"></script>        
         <script src="/socket.io/socket.io.js"></script>
         <script>
             //
             // Application startup & bootstrapping
             //
-            var app = null;
+            var controller = null;
             var socket = io({
                 transports: ['websocket']
             });
 
             $(function(){
-                app = new Application.Controller();
-                app.BindHostEvents($, socket);
-                app.Init(new Application.DataService());
+                var dataProvider = new VirtualAtm.DataService();
+                var graphingProvider = new VirtualAtm.GraphingServices($);
+                controller = new VirtualAtm.Controller(dataProvider, graphingProvider);
+                controller.BindHost($, socket);
             });
         </script>
     </body>

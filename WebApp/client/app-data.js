@@ -3,11 +3,14 @@
 //
 (function (scope) {
     // Create our namespace container
-    if (!scope.Application) {
-        scope.Application = {};
+    if (!scope.VirtualAtm) {
+        scope.VirtualAtm = {};
     }
 
     var DataService = function(){
+        //
+        // Loads the historical data (last 24 hrs)
+        //
         this.LoadHistoryData = function(callback){
             $.ajax({
                 type: "GET",
@@ -23,6 +26,9 @@
             });
         };
 
+        //
+        // Loads the initial state of the 'live' view (~last 5 mins).
+        //
         this.LoadLiveSnapshotData = function(callback){
             $.ajax({
                 type: "GET",
@@ -38,6 +44,9 @@
             });
         };
 
+        //
+        // Dispatches a maintenance message to the specified device
+        //
         this.SendMaintenanceRequest = function (device, maintType, callback) {
             $.ajax({
                 type: "POST",
@@ -57,6 +66,9 @@
             });
         };
 
+        //
+        // Lodas the last known image reported from the card reader
+        //
         this.LoadCardReaderImageInfo = function(callback){
             $.ajax({
                 type: "GET",
@@ -76,5 +88,5 @@
     //
     // Scope exports
     //
-    scope.Application.DataService = DataService;
+    scope.VirtualAtm.DataService = DataService;
 })(this);

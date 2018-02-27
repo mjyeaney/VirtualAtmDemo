@@ -65,3 +65,11 @@ $env:VirtualAtmCardReader = "--Fill In--"
 # For BulkAtmAgent/agent.js
 $env:VirtualAtmBulkAtmAgent = "--Fill In--"
 ```
+
+Integration with Cognitive Services
+-----------------------------------
+
+Currently, the virtual ATM takes a photo at the time of card swipe just to demonstrate the built-in capability 
+of IoT Hub to support device file uploads. However, a better demonstration will be to leverage the Face API to 
+compare the "cardholder" against a known image to demonstrate fraud protection possibilities. This will be implemented in
+an upcoming release.

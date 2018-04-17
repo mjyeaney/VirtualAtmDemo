@@ -66,6 +66,9 @@ $env:VirtualAtmCardReader = "--Fill In--"
 $env:VirtualAtmBulkAtmAgent = "--Fill In--"
 ```
 
+Note these environment variables will need set on the deployed web app as well - this can be done via the Azure portal, or
+through deployment scrips/VSTS.
+
 Integration with Cognitive Services
 -----------------------------------
 
